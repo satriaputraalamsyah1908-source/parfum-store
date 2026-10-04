@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf9"/><stop offset="1" stop-color="#f5eddc"/></linearGradient></defs>
+<rect width="200" height="260" fill="url(#bg)"/>
+<ellipse cx="100" cy="226" rx="62" ry="8" fill="#2e2118" opacity=".12"/>
+<rect x="86" y="62" width="28" height="22" rx="3" fill="#d4af37" stroke="#977822" stroke-width="2"/>
+<rect x="92" y="84" width="16" height="22" fill="#e0c47a" stroke="#977822" stroke-width="1.5"/>
+<path d="M100 105 L148 135 L148 185 L100 215 L52 185 L52 135 Z" fill="#3a2a3f" stroke="#8d4f8f" stroke-width="3"/><path d="M100 125 L130 142 L130 178 L100 195 L70 178 L70 142 Z" fill="#8d4f8f" opacity=".25"/>
+<text x="100" y="162" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="#f0d98a" opacity=".85">Tom Ford</text>
+<text x="100" y="246" text-anchor="middle" font-family="Georgia,serif" font-size="9" letter-spacing="2" fill="#a8896b">ORIENTAL</text>
+</svg>

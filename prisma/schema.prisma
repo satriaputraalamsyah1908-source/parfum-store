@@ -1,0 +1,197 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+enum ActiveStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum TransactionStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  QRIS
+  TRANSFER
+  EWALLET
+  DEBIT
+}
+
+enum StockType {
+  IN
+  OUT
+  ADJUSTMENT
+  SALE
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique @db.VarChar(20)
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id        Int          @id @default(autoincrement())
+  name      String       @db.VarChar(100)
+  username  String       @unique @db.VarChar(50)
+  email     String       @unique @db.VarChar(100)
+  password  String       @db.VarChar(255)
+  roleId    Int
+  status    ActiveStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  role           Role           @relation(fields: [roleId], references: [id])
+  transactions   Transaction[]
+  stockHistories StockHistory[]
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100)
+  description String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id           Int          @id @default(autoincrement())
+  code         String       @unique @db.VarChar(30)
+  barcode      String       @unique @db.VarChar(50)
+  name         String       @db.VarChar(150)
+  brand        String       @db.VarChar(100)
+  categoryId   Int
+  size         String       @db.VarChar(30)
+  costPrice    Int
+  sellingPrice Int
+  stock        Int          @default(0)
+  unit         String       @default("pcs") @db.VarChar(20)
+  description  String?      @db.Text
+  image        String?      @db.VarChar(255)
+  status       ActiveStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  category           Category            @relation(fields: [categoryId], references: [id])
+  transactionDetails TransactionDetail[]
+  stockHistories     StockHistory[]
+
+  @@index([categoryId])
+  @@index([name])
+  @@index([stock])
+  @@map("products")
+}
+
+model Member {
+  id         Int          @id @default(autoincrement())
+  memberCode String       @unique @db.VarChar(30)
+  name       String       @db.VarChar(100)
+  phone      String       @db.VarChar(20)
+  email      String?      @db.VarChar(100)
+  address    String?      @db.VarChar(255)
+  status     ActiveStatus @default(ACTIVE)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  transactions Transaction[]
+
+  @@index([name])
+  @@index([phone])
+  @@map("members")
+}
+
+model Transaction {
+  id            Int               @id @default(autoincrement())
+  invoiceNumber String            @unique @db.VarChar(30)
+  userId        Int
+  memberId      Int?
+  subtotal      Int
+  discount      Int               @default(0)
+  total         Int
+  paymentMethod PaymentMethod
+  paymentProvider String?         @db.VarChar(30)
+  paymentAmount Int               @default(0)
+  changeAmount  Int               @default(0)
+  status        TransactionStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  user    User                @relation(fields: [userId], references: [id])
+  member  Member?             @relation(fields: [memberId], references: [id])
+  details TransactionDetail[]
+  payment Payment?
+
+  @@index([userId])
+  @@index([memberId])
+  @@index([createdAt])
+  @@index([status])
+  @@map("transactions")
+}
+
+model TransactionDetail {
+  id            Int @id @default(autoincrement())
+  transactionId Int
+  productId     Int
+  quantity      Int
+  price         Int
+  subtotal      Int
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  product     Product     @relation(fields: [productId], references: [id])
+
+  @@index([transactionId])
+  @@index([productId])
+  @@map("transaction_details")
+}
+
+model Payment {
+  id            Int               @id @default(autoincrement())
+  transactionId Int               @unique
+  method        PaymentMethod
+  provider      String?           @db.VarChar(30)
+  reference     String?           @db.VarChar(60)
+  amount        Int
+  status        TransactionStatus @default(PENDING)
+  paidAt        DateTime?
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model StockHistory {
+  id          Int       @id @default(autoincrement())
+  productId   Int
+  type        StockType
+  quantity    Int
+  beforeStock Int
+  afterStock  Int
+  description String?   @db.VarChar(255)
+  userId      Int?
+  createdAt   DateTime  @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id])
+
+  @@index([productId])
+  @@index([userId])
+  @@map("stock_histories")
+}
